@@ -125,19 +125,10 @@ func (s *SymbolTable) DefineBuiltin(index int, name string, returnType string) S
 }
 
 func (s *SymbolTable) DefineFunctionName(name string, returnType string) Symbol {
-	print("name: ", name, "\n")
 	s.FuncIndex++
 	symbol := Symbol{Name: name, Index: s.FuncIndex, Scope: FunctionScope, Type: returnType}
 	s.store[name] = symbol
 	return symbol
-}
-
-func getInnermostSymbolTable(symbolTable *SymbolTable) *SymbolTable {
-	current := symbolTable
-	for current.Inner != nil {
-		current = current.Inner
-	}
-	return current
 }
 
 func (s *SymbolTable) getCurrentFunction() (FunctionType, bool) {

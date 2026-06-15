@@ -1,7 +1,7 @@
 package main
 
 import (
-	"a-compiler-in-go/src/7west/src/7west/repl"
+	"cedar-lang/internal/repl"
 	"fmt"
 	"os"
 	"os/user"
@@ -14,8 +14,7 @@ func main() {
 		panic(err)
 	}
 	// print a welcome message
-	fmt.Printf("Hello %s! This is the 7West programming language!\n", user.Username)
-	// util.Run("/Users/happyhome/Desktop/a-compiler-in-go/tests/correct")
+	fmt.Printf("Hello %s! This is the Cedar programming language!\n", user.Username)
 	// start the REPL
 	repl.Start(os.Stdin, os.Stdout)
 }

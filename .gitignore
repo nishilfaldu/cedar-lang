@@ -1,2 +1,14 @@
-.DS_Store/*
-/tests/.DS_Store/*
+# macOS
+.DS_Store
+
+# Editor backups
+*~
+
+# Go build output / binaries
+/cedar
+*.exe
+*.test
+*.out
+
+# Generated LLVM IR
+*.ll

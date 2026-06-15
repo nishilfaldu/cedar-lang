@@ -1,10 +1,10 @@
 package repl
 
 import (
-	"a-compiler-in-go/src/7west/src/7west/compiler"
-	"a-compiler-in-go/src/7west/src/7west/lexer"
-	"a-compiler-in-go/src/7west/src/7west/parser"
 	"bufio"
+	"cedar-lang/internal/compiler"
+	"cedar-lang/internal/lexer"
+	"cedar-lang/internal/parser"
 	"fmt"
 	"io"
 )

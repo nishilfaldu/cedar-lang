@@ -1,9 +1,9 @@
 package util
 
 import (
-	"a-compiler-in-go/src/7west/src/7west/compiler"
-	"a-compiler-in-go/src/7west/src/7west/lexer"
-	"a-compiler-in-go/src/7west/src/7west/parser"
+	"cedar-lang/internal/compiler"
+	"cedar-lang/internal/lexer"
+	"cedar-lang/internal/parser"
 	"os"
 	"path/filepath"
 	"strings"

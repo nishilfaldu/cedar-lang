@@ -1,8 +1,8 @@
 package compiler
 
 import (
-	"a-compiler-in-go/src/7west/src/7west/ast"
-	"a-compiler-in-go/src/7west/src/7west/object"
+	"cedar-lang/internal/ast"
+	"cedar-lang/internal/object"
 	"fmt"
 	"sort"
 	"strconv"
@@ -73,9 +73,6 @@ func (c *Compiler) Compile(node ast.Node) (CompileResult, error) {
 				return CompileResult{}, err
 			}
 		}
-		print("before program body declarations\n")
-
-		print("after program body declarations\n")
 
 		for _, stmt := range node.Statements {
 			_, err := c.Compile(stmt)
@@ -86,22 +83,19 @@ func (c *Compiler) Compile(node ast.Node) (CompileResult, error) {
 
 	case *ast.VariableDeclaration:
 		if node.Type.Array != nil {
-			print("did you run array - in variable\n")
 			// Handle array declaration
 			// First, compile the inner variable declaration
 			// Then, define the symbol in the symbol table as an array
 			if c.symbolTable.IsGlobalScope() {
 				c.symbolTable.DefineArray(node.Name.Value, node.Type.Name+"[]", node.Type.Array.Value, GlobalScope)
 			} else {
-				symbol := c.symbolTable.DefineArray(node.Name.Value, node.Type.Name+"[]", node.Type.Array.Value, LocalScope)
-				print(symbol.Name, symbol.Index, symbol.Scope, "in Variable Declaration case\n")
+				c.symbolTable.DefineArray(node.Name.Value, node.Type.Name+"[]", node.Type.Array.Value, LocalScope)
 			}
 		} else {
 			// Handle variable declaration
 			// First, compile the inner variable declaration
 			// Then, define the symbol in the symbol table as a variable
-			symbol := c.symbolTable.Define(node.Name.Value, node.Type.Name, false)
-			print(symbol.Name, symbol.Index, symbol.Scope, "in Variable Declaration case\n")
+			c.symbolTable.Define(node.Name.Value, node.Type.Name, false)
 		}
 
 	case *ast.GlobalVariableDeclaration:
@@ -109,7 +103,6 @@ func (c *Compiler) Compile(node ast.Node) (CompileResult, error) {
 		// First, compile the inner variable declaration
 		// Then, define the symbol in the symbol table as a global variable
 		if node.VariableDeclaration.Type.Array != nil {
-			print("did you run array - in global\n")
 			// check if the array index value is less than or equal to 0
 			if node.VariableDeclaration.Type.Array.Value <= 0 {
 				return CompileResult{}, fmt.Errorf("array size must be greater than 0")
@@ -117,17 +110,14 @@ func (c *Compiler) Compile(node ast.Node) (CompileResult, error) {
 			if typeofObject(node.VariableDeclaration.Type.Array.Value) != "int" {
 				return CompileResult{}, fmt.Errorf("array size must be an integer")
 			}
-			symbol := c.symbolTable.DefineArray(node.VariableDeclaration.Name.Value, node.VariableDeclaration.Type.Name+"[]", node.VariableDeclaration.Type.Array.Value, GlobalScope)
-			print(symbol.Name, symbol.Index, symbol.Scope, "1 - in Global Variable Declaration case\n")
+			c.symbolTable.DefineArray(node.VariableDeclaration.Name.Value, node.VariableDeclaration.Type.Name+"[]", node.VariableDeclaration.Type.Array.Value, GlobalScope)
 		} else {
-			symbol := c.symbolTable.DefineGlobal(node.VariableDeclaration.Name.Value, node.VariableDeclaration.Type.Name)
-			print(symbol.Name, symbol.Index, symbol.Scope, "2 - in Global Variable Declaration case\n")
+			c.symbolTable.DefineGlobal(node.VariableDeclaration.Name.Value, node.VariableDeclaration.Type.Name)
 
 		}
 
 	case *ast.Identifier:
 		symbol, ok := c.symbolTable.Resolve(node.Value)
-		print(symbol.Scope, symbol.Type, " in Identifier case i just need scope\n")
 		if !ok {
 			return CompileResult{}, fmt.Errorf("undefined variable %s", node.Value)
 		}
@@ -140,7 +130,6 @@ func (c *Compiler) Compile(node ast.Node) (CompileResult, error) {
 		// if symbol.Scope == GlobalScope {
 		// 	return CompileResult{Type: symbol.Type}, nil
 		// }
-		print(symbol.Name, symbol.Type, symbol.Index, symbol.Scope, "in Identifier case\n")
 		return CompileResult{Type: symbol.Type}, nil
 
 	case *ast.LoopStatement:
@@ -174,8 +163,6 @@ func (c *Compiler) Compile(node ast.Node) (CompileResult, error) {
 		}
 
 	case *ast.PrefixExpression:
-		print(node.Operator, " - operator\n")
-		fmt.Printf("Type of curr node in prefix: %T\n", node.Right)
 		cr, err := c.Compile(node.Right)
 		if err != nil {
 			return CompileResult{}, err
@@ -184,7 +171,6 @@ func (c *Compiler) Compile(node ast.Node) (CompileResult, error) {
 		return CompileResult{Type: cr.Type}, nil
 
 	case *ast.InfixExpression:
-		print(node.Operator, " - operator\n")
 		if node.Operator == "<" {
 			_, err := c.Compile(node.Right)
 			if err != nil {
@@ -196,12 +182,10 @@ func (c *Compiler) Compile(node ast.Node) (CompileResult, error) {
 				return CompileResult{}, err_
 			}
 		}
-		fmt.Printf("Type of curr node in infix - left: %T\n", node.Left)
 		cr, err := c.Compile(node.Left)
 		if err != nil {
 			return CompileResult{}, err
 		}
-		fmt.Printf("Type of curr node in infix - right: %T\n", node.Right)
 		cr_, err_ := c.Compile(node.Right)
 		if err_ != nil {
 			return CompileResult{}, err_
@@ -215,7 +199,6 @@ func (c *Compiler) Compile(node ast.Node) (CompileResult, error) {
 		}
 
 	case *ast.IfExpression:
-		print(node.Condition, " - condition\n")
 		_, err := c.Compile(node.Condition)
 		if err != nil {
 			return CompileResult{}, err
@@ -238,7 +221,6 @@ func (c *Compiler) Compile(node ast.Node) (CompileResult, error) {
 		}
 
 	case *ast.IfBlockStatement:
-		print(len(node.Statements), " - len of statements\n")
 		for _, stmt := range node.Statements {
 			_, err := c.Compile(stmt)
 			if err != nil {
@@ -248,7 +230,6 @@ func (c *Compiler) Compile(node ast.Node) (CompileResult, error) {
 
 	// AssignmentStatement node and Destination node are merged in one case
 	case *ast.AssignmentStatement:
-		fmt.Printf("Type of curr node in assignment statement: %T\n", node.Value)
 		cr, err := c.Compile(node.Value)
 		if err != nil {
 			return CompileResult{}, err
@@ -266,14 +247,12 @@ func (c *Compiler) Compile(node ast.Node) (CompileResult, error) {
 		} else {
 			// Compile the identifier part of the destination
 			symbol, ok := c.symbolTable.Resolve(node.Destination.Identifier.Value)
-			print(symbol.Name, symbol.Index, symbol.Scope, "in AssignmentStatement case - print for usage\n")
 			if !ok {
 				return CompileResult{}, fmt.Errorf("variable %s not defined", node.Destination.Identifier.Value)
 			}
 			if cr.Type != symbol.Type {
 				return CompileResult{}, fmt.Errorf("type mismatch: cannot assign %s to %s", cr.Type, symbol.Type)
 			}
-			print(symbol.Type, cr.Type, "hello symbol type here\n")
 		}
 
 	case *ast.ExpressionStatement:
@@ -283,15 +262,12 @@ func (c *Compiler) Compile(node ast.Node) (CompileResult, error) {
 		}
 
 	case *ast.ReturnStatement:
-		fmt.Printf("Type of curr node in return: %T\n", node.ReturnValue)
 		cr, err := c.Compile(node.ReturnValue)
 		if err != nil {
 			return CompileResult{}, err
 		}
 
-		print("now: \n")
 		function, ok := c.symbolTable.getCurrentFunction()
-		print(function.Name, function.ReturnType, "in return statement printing function stuff\n")
 		if !ok {
 			return CompileResult{}, fmt.Errorf("return statement outside of function")
 		}
@@ -306,11 +282,9 @@ func (c *Compiler) Compile(node ast.Node) (CompileResult, error) {
 
 	case *ast.StringLiteral:
 		str := &object.String{Value: node.Value}
-		print(str)
 		return CompileResult{Type: string(str.Type())}, nil
 
 	case *ast.IntegerLiteral:
-		fmt.Printf("Type of curr node in integer literal: %T\n", node.Value)
 		integer := &object.Integer{Value: node.Value}
 		return CompileResult{Type: string(integer.Type())}, nil
 
@@ -331,7 +305,6 @@ func (c *Compiler) Compile(node ast.Node) (CompileResult, error) {
 		}
 
 	case *ast.IndexExpression:
-		print("ran index\n")
 		// left is the identifier
 		cr, err := c.Compile(node.Left)
 		if err != nil {
@@ -367,7 +340,6 @@ func (c *Compiler) Compile(node ast.Node) (CompileResult, error) {
 		return CompileResult{Type: sub}, nil
 
 	case *ast.CallExpression:
-		fmt.Printf("Type of curr node in call expression: %T\n", node.Function)
 
 		if _, ok := node.Function.(*ast.Identifier); ok {
 			// node.Function is of type *ast.Identifier
@@ -377,7 +349,6 @@ func (c *Compiler) Compile(node ast.Node) (CompileResult, error) {
 			} else {
 				// Try to resolve the function name in inner scopes
 				symbol, ok := c.symbolTable.ResolveInner(currentFuncName)
-				print("haha here i am\n")
 				if ok {
 					// functon found in inner scope - might be nested procedures
 					_, err := c.checkArguments(node)
@@ -424,7 +395,6 @@ func (c *Compiler) Compile(node ast.Node) (CompileResult, error) {
 
 	case *ast.ProcedureHeader:
 		c.enterScope()
-		print("XXX")
 		// define the function name and parameters in the symbol table
 		if node.Name.Value != "" {
 			c.symbolTable.DefineFunctionName(node.Name.Value, node.TypeMark.Name)
@@ -433,8 +403,6 @@ func (c *Compiler) Compile(node ast.Node) (CompileResult, error) {
 		for _, param := range node.Parameters {
 			c.symbolTable.Define(param.Name.Value, param.Type.Name, true)
 		}
-		print("in procedure header after enter scope\n")
-		PrintSymbolTable(c.symbolTable)
 
 	case *ast.ProcedureBody:
 		for _, decl := range node.Declarations {
@@ -452,8 +420,6 @@ func (c *Compiler) Compile(node ast.Node) (CompileResult, error) {
 		}
 		// leave scope after the body of the procedure
 		c.leaveScope()
-		print("after procedure body leave scope\n")
-		PrintSymbolTable(c.symbolTable)
 	}
 
 	return CompileResult{}, nil
@@ -479,7 +445,6 @@ func sortParamLocalSymbols(localSymbols []Symbol) {
 }
 
 func getParamLocalSymbols(symbolTable *SymbolTable, functionName string) []Symbol {
-	print("\nafter getParams\n")
 	functionScope, funcIndex := findFunctionScope(symbolTable, functionName)
 	if functionScope == nil {
 		// Function not found, return empty slice
@@ -489,7 +454,6 @@ func getParamLocalSymbols(symbolTable *SymbolTable, functionName string) []Symbo
 	localSymbols := make([]Symbol, 0)
 	for _, sym := range functionScope.store {
 		if sym.Scope == ParamLocalScope && sym.Index == funcIndex {
-			print(sym.Name + " haha\n")
 			localSymbols = append(localSymbols, sym)
 		}
 	}
@@ -501,13 +465,9 @@ func getParamLocalSymbols(symbolTable *SymbolTable, functionName string) []Symbo
 // Find the symbol table containing the function definition
 func findFunctionScope(symbolTable *SymbolTable, functionName string) (*SymbolTable, int) {
 	current := symbolTable
-	print(functionName)
-	print("\nprinting current symbol table to detect loop\n")
-	PrintSymbolTable(current)
 	for current != nil {
 		// Check if the current symbol table contains the function definition
 		if _, ok := current.store[functionName]; ok {
-			print(current.store[functionName].Name, " - function name\n")
 			return current, current.store[functionName].Index
 		}
 		// Move to the inner symbol table
@@ -588,9 +548,6 @@ func typesCompatible(type1 string, type2 string) bool {
 func (c *Compiler) checkArguments(node *ast.CallExpression) (CompileResult, error) {
 	// Get local symbols for the function being called
 	paramLocalSymbols := getParamLocalSymbols(c.symbolTable, node.Function.String())
-	print(len(paramLocalSymbols), " - paramLocalSymbols\n")
-	print(node.Function.String(), "here in checkArgs\n")
-	print(len(node.Arguments), " - len of arguments\n")
 	// Check if the number of arguments matches the number of local symbols
 	if len(node.Arguments) < len(paramLocalSymbols) {
 		return CompileResult{}, fmt.Errorf("not enough arguments provided for function call")
@@ -600,7 +557,6 @@ func (c *Compiler) checkArguments(node *ast.CallExpression) (CompileResult, erro
 
 	// Check the type of each argument against the corresponding local symbol
 	for i, a := range node.Arguments {
-		fmt.Printf("Type of curr node in call expression - arguments: %T\n", a)
 		cr, err := c.Compile(a)
 		if err != nil {
 			return CompileResult{}, err
@@ -633,7 +589,6 @@ func typeofObject(variable interface{}) string {
 // isBooleanExpression checks if the given expression is a boolean expression.
 // It returns true if the expression is boolean, otherwise false.
 func (c *Compiler) isBooleanExpression(expr string) bool {
-	print(expr, " - expr\n")
 	if expr == "true" || expr == "false" {
 		return true
 	}

@@ -5,7 +5,6 @@ type TokenType string
 type Token struct {
 	Type    TokenType
 	Literal string
-	line    int // to track what line is the token on
 }
 
 const (

@@ -1,8 +1,8 @@
 package ast
 
 import (
-	"a-compiler-in-go/src/7west/src/7west/token"
 	"bytes"
+	"cedar-lang/internal/token"
 	"fmt"
 	"strings"
 )

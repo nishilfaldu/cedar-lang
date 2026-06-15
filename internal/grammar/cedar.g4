@@ -1,4 +1,4 @@
-grammar west;
+grammar cedar;
 
 program: program_header program_body '.';
 

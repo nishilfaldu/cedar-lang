@@ -1,7 +1,7 @@
 package lexer
 
 import (
-	"a-compiler-in-go/src/7west/src/7west/token"
+	"cedar-lang/internal/token"
 	"testing"
 )
 
