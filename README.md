@@ -7,6 +7,8 @@
 > Cedar is a small statically-typed programming language and its compiler,
 > written in Go. It was my first compiler, my first time writing Go, and my
 > first encounter with lexers, parsers, and abstract syntax trees — all at once.
+> It lowers source all the way to LLVM IR, so a Cedar program compiles to a
+> real native executable.
 
 ## What this was
 
@@ -95,14 +97,17 @@ source (.src)
      v   analyzer     internal/compiler  symbol tables, scopes, type checking
  typed AST
      |
-     v   back end     internal/llirgen   LLVM IR via llir/llvm  (in progress)
+     v   back end     internal/llirgen   LLVM IR via llir/llvm
   LLVM IR
+     |
+     v   clang
+  native executable
 ```
 
-The front end and semantic analysis run end to end: source is scanned into
-tokens, parsed into an AST, and checked for scope and type errors. The LLVM IR
-back end is the part I was still growing out — the `llir/llvm` setup and helpers
-are in `internal/llirgen`.
+The whole pipeline runs end to end: source is scanned into tokens, parsed into
+an AST, checked for scope and type errors, and then lowered to LLVM IR in
+`internal/llirgen`. Handing that IR to `clang` produces a native binary, so a
+Cedar program actually runs.
 
 ## Project layout
 
@@ -126,11 +131,31 @@ tests/
 
 ## Running it
 
-Requires Go 1.21+.
+Requires Go 1.21+. Compiling a program to a native binary also needs `clang`
+(or any tool that can assemble LLVM IR).
+
+Compile a Cedar program to an executable:
+
+```bash
+go run . build tests/correct/math.src   # writes tests/correct/math.ll
+clang math.ll -o math                    # IR -> native binary
+./math                                   # prints 610  (Fib(15))
+```
+
+`build -o out.ll` chooses the output path, and `build -o -` prints the IR to
+stdout. Programs that read input use the `getInteger` / `getString` builtins:
+
+```bash
+go run . build tests/correct/recursiveFib.src -o fib.ll
+clang fib.ll -o fib
+echo 8 | ./fib        # prints Fib(0)..Fib(7)
+```
+
+Other useful commands:
 
 ```bash
 go run .          # start the REPL and type Cedar at the >> prompt
-go test ./...     # run the lexer and parser tests
+go test ./...     # run the lexer, parser, and codegen tests
 go build ./...    # compile everything
 ```
 
